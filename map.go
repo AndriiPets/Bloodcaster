@@ -20,6 +20,7 @@ type Map struct {
 	cell_index_map map[rl.Vector2]int
 	map_position   rl.Vector3
 	planes         map[string]rl.Model
+	player_pos     rl.Vector2
 }
 
 func (m *Map) get_game_map() [][]rune {
@@ -27,7 +28,7 @@ func (m *Map) get_game_map() [][]rune {
 		{'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c'},
 		{'c', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', 'c', '_', '_', 'c'},
 		{'c', '_', '_', 'c', 'c', 'c', 'c', '_', '_', '_', 'c', 'c', 'c', '_', 'c', '_', '_', 'c'},
-		{'c', '_', '_', '_', '_', '_', 'c', '_', '_', '_', '_', '_', 'c', '_', '_', '_', '_', 'c'},
+		{'c', '_', 'p', '_', '_', '_', 'c', '_', '_', '_', '_', '_', 'c', '_', '_', '_', '_', 'c'},
 		{'c', '_', '_', '_', '_', '_', 'c', '_', '_', '_', 'c', '_', 'c', '_', 'c', 'c', '_', 'c'},
 		{'c', '_', '_', 'c', 'c', 'c', 'c', '_', '_', '_', 'c', '_', 'c', '_', 'c', '_', '_', 'c'},
 		{'c', '_', '_', '_', '_', '_', '_', '_', '_', 'c', 'c', 'c', 'c', '_', 'c', 'c', '_', 'c'},
@@ -64,7 +65,7 @@ func (m *Map) Map_parse_regions() {
 			if val == 'c' {
 				//draw walls and create the wall entity
 				//position := rl.NewVector2(float32(m.map_position.X-0.5+float32(x)), float32(m.map_position.Z-0.5+float32(y)))
-				position := rl.NewVector2(float32(m.map_position.X-0.5+float32(x)), float32(m.map_position.Z-0.5+float32(y)))
+				position := rl.NewVector2(float32(m.map_position.X+0.5+float32(x)), float32(m.map_position.Z+0.5+float32(y)))
 				bb := Utils_MakeBoundingBox(rl.NewVector3(position.X, 0.0, position.Y), rl.NewVector3(1.0, 1.0, 1.0))
 				model := m.Create_wall_model()
 
@@ -77,6 +78,8 @@ func (m *Map) Map_parse_regions() {
 				num := m.cell_index_map[grid_cell]
 
 				c_map[num] = append(c_map[num], map_entity)
+			} else if val == 'p' {
+				m.player_pos = rl.NewVector2(float32(m.map_position.X-0.5+float32(x)), float32(m.map_position.Z-0.5+float32(y)))
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"math"
+	math "maze.io/x/math32"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -16,10 +16,10 @@ func Utils_MakeBoundingBox(position, size rl.Vector3) rl.BoundingBox {
 }
 
 func Utils_calculate_camera_vector(yaw float32, pitch float32) rl.Vector3 {
-	c_yaw := float32(math.Cos(float64(yaw)))
-	c_pitch := float32(math.Cos(float64(pitch)))
-	s_yaw := float32(math.Sin(float64(yaw)))
-	s_pitch := float32(math.Sin(float64(pitch)))
+	c_yaw := math.Cos(yaw)
+	c_pitch := math.Cos(pitch)
+	s_yaw := math.Sin(yaw)
+	s_pitch := math.Sin(pitch)
 
 	x := c_yaw * c_pitch
 	y := s_pitch
@@ -41,8 +41,8 @@ func Utils_find_grid_cell_center(index_x, index_y, len float32) rl.Vector2 {
 }
 
 func Utils_find_cell_index(x, y, len float32) rl.Vector2 {
-	index_x := x - float32(math.Mod(float64(x), float64(len)))
-	index_y := y - float32(math.Mod(float64(y), float64(len)))
+	index_x := x - math.Mod(x, len)
+	index_y := y - math.Mod(y, len)
 
 	return rl.NewVector2(index_x, index_y)
 }
