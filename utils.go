@@ -46,3 +46,12 @@ func Utils_find_cell_index(x, y, len float32) rl.Vector2 {
 
 	return rl.NewVector2(index_x, index_y)
 }
+
+func Load_texture(path string) rl.Texture2D {
+	img := rl.LoadImage(path)
+	tex := rl.LoadTextureFromImage(img)
+
+	rl.UnloadImage(img)
+
+	return tex
+}

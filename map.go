@@ -46,13 +46,16 @@ func (m *Map) get_game_map() [][]rune {
 	return game_map
 }
 
-func (m *Map) Map_init() {
+func Map_init() Map {
 
-	m.map_position = rl.NewVector3(-18.0, 0.0, -12.0)
-	m.Map_cell_partition()
-	m.Map_parse_regions()
-	m.Create_planes()
+	game_map := Map{}
 
+	game_map.map_position = rl.NewVector3(-18.0, 0.0, -12.0)
+	game_map.Map_cell_partition()
+	game_map.Map_parse_regions()
+	game_map.Create_planes()
+
+	return game_map
 }
 
 func (m *Map) Map_parse_regions() {
@@ -73,7 +76,7 @@ func (m *Map) Map_parse_regions() {
 				m.walls = append(m.walls, map_entity)
 
 				//calculate to wich cell object belongs and place it in cell_map
-				grid_cell := Utils_find_cell_index(position.X, position.Y, 3.0)
+				grid_cell := Utils_find_cell_index(position.X, position.Y, MAP_CELL_SIZE)
 
 				num := m.cell_index_map[grid_cell]
 
@@ -88,10 +91,7 @@ func (m *Map) Map_parse_regions() {
 
 func (m *Map) Create_wall_model() rl.Model {
 
-	texture_image := rl.LoadImage("./assets/textures/wall1.png")
-
-	texture := rl.LoadTextureFromImage(texture_image)
-	rl.UnloadImage(texture_image)
+	texture := Load_texture("./assets/textures/wall1.png")
 
 	cube := rl.LoadModelFromMesh(rl.GenMeshCube(1, 1, 1))
 
@@ -109,8 +109,8 @@ func (m *Map) Create_planes() {
 	floor_plane := rl.LoadModelFromMesh(rl.GenMeshPlane(m.width, m.height, 1, 1))
 	ceiling_plane := rl.LoadModelFromMesh(rl.GenMeshPlane(m.width, m.height, 1, 1))
 
-	texture := rl.LoadTexture("./assets/textures/floor1.png")
-	texture_ceiling := rl.LoadTexture("./assets/textures/ceiling1.png")
+	texture := Load_texture("./assets/textures/floor1.png")
+	texture_ceiling := Load_texture("./assets/textures/ceiling1.png")
 	rl.SetMaterialTexture(floor_plane.Materials, rl.MapDiffuse, texture)
 	rl.SetMaterialTexture(ceiling_plane.Materials, rl.MapDiffuse, texture_ceiling)
 
@@ -153,7 +153,7 @@ func (m *Map) Map_cell_partition() {
 
 			position := rl.NewVector2(float32(mapPosition.X-0.5+float32(x)), float32(mapPosition.Z-0.5+float32(y)))
 
-			grid_cell := Utils_find_cell_index(position.X, position.Y, 3.0)
+			grid_cell := Utils_find_cell_index(position.X, position.Y, MAP_CELL_SIZE)
 
 			_, ok := i_map[grid_cell]
 			if !ok {

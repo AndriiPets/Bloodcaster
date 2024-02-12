@@ -28,10 +28,10 @@ func (c *PlayerCustomCamera) custom_camera_init() {
 	c.mouse_sensitivity = 0.003
 	c.player_speed = 1.75
 	c.allow_flight = false
-	c.view_bobble_freq = 0.5
+	c.view_bobble_freq = 45
 	c.view_bobble_mag = 0.02
 	c.curr_bobble = 0
-	c.view_bobble_waver_mag = 0.002
+	c.view_bobble_waver_mag = 0.005
 }
 
 func (c *PlayerCustomCamera) Player_camera_init(pos_x, pos_z float32) rl.Camera {
@@ -96,22 +96,6 @@ func (c *PlayerCustomCamera) Player_update_camera(camera *rl.Camera) {
 		"down":     c.Get_speed_for_axis(KEY_MOVE_DOWN),
 	}
 
-	/* //Move camera around x pos
-	camera.Position.X += ((math32.Sin(c.angle.X)*direction["backward"] -
-		math32.Sin(c.angle.X)*direction["forward"] -
-		math32.Cos(c.angle.X)*direction["left"] +
-		math32.Cos(c.angle.X)*direction["right"]) * c.player_speed) * rl.GetFrameTime()
-
-	//Move camera around y pos
-	camera.Position.Y += (math32.Sin(c.angle.Y)*direction["forward"] -
-		math32.Sin(c.angle.Y)*direction["backward"]*c.player_speed) * rl.GetFrameTime()
-
-	//Move camera around z pos
-	camera.Position.Z += (math32.Cos(c.angle.X)*direction["backward"] -
-		math32.Cos(c.angle.X)*direction["forward"] +
-		math32.Sin(c.angle.X)*direction["left"] -
-		math32.Sin(c.angle.X)*direction["right"]*c.player_speed) * rl.GetFrameTime() */
-
 	// Camera orientation calculation
 	c.angle.X -= mouse_pos_delta.X * c.mouse_sensitivity * rl.GetFrameTime()
 	c.angle.Y -= mouse_pos_delta.Y * c.mouse_sensitivity * rl.GetFrameTime()
@@ -124,11 +108,6 @@ func (c *PlayerCustomCamera) Player_update_camera(camera *rl.Camera) {
 	}
 
 	//Recalculate camera target based on translation and rotation
-	//translation := rl.MatrixTranslate(0, 0, (c.target_distance / PLAYER_CAMERA_PANNING_DIVIDER))
-
-	//rotation := rl.MatrixInvert(rl.MatrixRotateXYZ(rl.NewVector3(math32.Pi*2-c.angle.Y, math32.Pi*2-c.angle.X, 0)))
-
-	//transform := rl.MatrixMultiply(translation, rotation)
 	target := rl.Vector3Transform(rl.NewVector3(0, 0, 1), rl.MatrixRotateXYZ(rl.NewVector3(c.angle.Y, -c.angle.X, 0)))
 
 	if c.allow_flight {
@@ -141,10 +120,11 @@ func (c *PlayerCustomCamera) Player_update_camera(camera *rl.Camera) {
 
 	camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Scale(c.forward, direction["forward"]-direction["backward"]))
 	camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Scale(c.right, direction["right"]-direction["left"]))
-	camera.Position.Y = +direction["up"] - direction["down"]
+	camera.Position.Y = direction["up"] - direction["down"]
 
 	var eye_offset float32 = c.player_eyes_pos
 
+	//Head bobble calculation
 	if c.view_bobble_freq > 0 {
 		swing_delta := math32.Max(
 			math32.Abs(direction["forward"]-direction["backward"]),

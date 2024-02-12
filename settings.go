@@ -7,9 +7,13 @@ import (
 const (
 	//game
 	WALLS_HEIGHT  float32 = 0.5
-	SCREEN_WIDTH          = 1280
-	SCREEN_HEIGHT         = 720
-	FPS                   = 60
+	SCREEN_WIDTH  int32   = 1280
+	SCREEN_HEIGHT int32   = 720
+	HALF_WIDTH    int32   = 640
+	HALF_HEIGHT   int32   = 360
+	FPS           int32   = 60
+	//map
+	MAP_CELL_SIZE = 3.0 //shoud be dividable by map length and width witout reminder
 	//camera
 	FOV                           = 60.0
 	PLAYER_CAMERA_MIN_CLAMP       = 89.0
