@@ -5,17 +5,20 @@ import (
 )
 
 type GameHud struct {
-	player    string
-	crosshair rl.Texture2D
+	player        string //give hud player and weapons object to draw health, ammo ect.
+	weapon_holder *WeaponHolder
+	crosshair     rl.Texture2D
 }
 
 func (h *GameHud) Draw() {
-	rl.DrawTexture(h.crosshair, HALF_WIDTH, HALF_HEIGHT, rl.White)
+	rl.DrawTexture(h.crosshair, HALF_WIDTH-(h.crosshair.Width/2), HALF_HEIGHT-(h.crosshair.Width/2), rl.White)
+	h.weapon_holder.Draw()
 }
 
-func Hud_init() GameHud {
+func Hud_init(weapons *WeaponHolder) GameHud {
 	hud := GameHud{}
 	hud.player = "player"
+	hud.weapon_holder = weapons
 	hud.crosshair = Load_texture("./assets/textures/crosshair.png")
 
 	return hud
