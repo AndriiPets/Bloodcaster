@@ -48,7 +48,7 @@ func (g *Game) init_player() {
 }
 
 func (g *Game) init_hud() {
-	g.hud = Hud_init(&g.weapon_holder)
+	g.hud = Hud_init(&g.weapon_holder, &g.player)
 }
 
 func (g *Game) init_map() {

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 	"maze.io/x/math32"
 )
@@ -29,6 +27,13 @@ type WeaponHolder struct {
 	curr_frame     int32
 	frame_counter  int32
 	is_active      bool
+	weapon_pos     rl.Vector2
+	//bob
+	current_bob float32
+	angle       float32
+	angle_a     float32
+	angle_v     float32
+	grav        float32
 }
 
 func Weapons_init() WeaponHolder {
@@ -37,6 +42,11 @@ func Weapons_init() WeaponHolder {
 	wh.weapons = Create_weapons_map()
 	wh.load_weapon_textures()
 	wh.current_weapon = "pistol"
+	wh.weapon_pos = rl.NewVector2(0, 0)
+	wh.angle = math32.Pi / 2
+	wh.angle_a = 0
+	wh.angle_v = 0
+	wh.grav = 0.6
 
 	return wh
 }
@@ -69,7 +79,7 @@ func (w *WeaponHolder) weapon_change(name string) {
 	}
 }
 
-func (w *WeaponHolder) Weapon_fire(camera *rl.Camera, nextFire float32) float32 {
+func (w *WeaponHolder) Weapon_fire(camera *rl.Camera, game_map *Map, nextFire float32) float32 {
 	if nextFire > 0 {
 		nextFire -= rl.GetFrameTime()
 	} else {
@@ -80,7 +90,8 @@ func (w *WeaponHolder) Weapon_fire(camera *rl.Camera, nextFire float32) float32 
 			w.is_active = true
 			w.curr_frame = weapon.sprite_fire_frame
 
-			//ray_cast := rl.GetMouseRay(rl.NewVector2(float32(HALF_WIDTH), float32(HALF_HEIGHT)), *camera)
+			ray_cast := rl.GetMouseRay(rl.NewVector2(float32(HALF_WIDTH), float32(HALF_HEIGHT)), *camera)
+			game_map.Test_wall_hit(ray_cast)
 			//rl.DrawRay(ray_cast, rl.Red)
 		}
 		nextFire = weapon.fire_rate
@@ -89,10 +100,8 @@ func (w *WeaponHolder) Weapon_fire(camera *rl.Camera, nextFire float32) float32 
 	return nextFire
 }
 
-func (w *WeaponHolder) Draw() {
+func (w *WeaponHolder) Draw(swing_delta float32) {
 	weapon := w.weapons[w.current_weapon]
-
-	rl.SetWindowTitle(fmt.Sprintln(rl.GetFPS()))
 
 	frame_width := float32(weapon.sprite_texture.Width) / float32(weapon.sprites_total)
 	frame_height := float32(weapon.sprite_texture.Height)
@@ -102,8 +111,27 @@ func (w *WeaponHolder) Draw() {
 	pos_x := float32(HALF_WIDTH) - (frame_width * weapon.sprite_position_offset.X)
 	pos_y := float32(SCREEN_HEIGHT) - (frame_height * weapon.sprite_position_offset.Y)
 
+	//weapon bob
+	if swing_delta > 0 {
+		var len float32 = 30
+		force := w.grav * math32.Sin(w.angle)
+		w.angle_a = (-1 * force) / len
+		w.angle_v += w.angle_a
+		w.angle += w.angle_v
+
+		w.weapon_pos.X = len*math32.Sin(w.angle) + pos_x
+		w.weapon_pos.Y = len*math32.Cos(w.angle) + pos_y
+
+	} else {
+		w.current_bob = 0
+		w.weapon_pos.X = pos_x
+		w.weapon_pos.Y = pos_y
+	}
+
+	//rl.SetWindowTitle(fmt.Sprintln(rl.GetFPS()))
+
 	source_rect := rl.NewRectangle(0, 0, frame_width, frame_height)
-	dest_rect := rl.NewRectangle(pos_x, pos_y, frame_width*scale, frame_height*scale)
+	dest_rect := rl.NewRectangle(w.weapon_pos.X, w.weapon_pos.Y, frame_width*scale, frame_height*scale) //make bobble like camera
 
 	if w.is_active {
 		w.frame_counter++

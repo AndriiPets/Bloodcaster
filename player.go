@@ -12,6 +12,7 @@ type Player struct {
 	pos_y       float32
 	game_map    *Map
 	weapons     *WeaponHolder
+	swing_delta float32
 }
 
 func Player_init(game_map *Map, weapons *WeaponHolder) Player {
@@ -31,7 +32,7 @@ func Player_init(game_map *Map, weapons *WeaponHolder) Player {
 func (p *Player) Update() {
 	oldCamPos := p.camera.Position
 
-	p.camera_type.Player_update_camera(&p.camera)
+	p.swing_delta = p.camera_type.Player_update_camera(&p.camera)
 
 	playerPos := rl.NewVector2(p.camera.Position.X, p.camera.Position.Z)
 	if p.game_map.Check_wall_collision(playerPos, 0.3) {
@@ -47,6 +48,6 @@ func (p *Player) fire_weapon(camera *rl.Camera3D) {
 	p.next_fire -= rl.GetFrameTime()
 
 	if rl.IsMouseButtonDown(KEY_FIRE) {
-		p.next_fire = p.weapons.Weapon_fire(camera, p.next_fire)
+		p.next_fire = p.weapons.Weapon_fire(camera, p.game_map, p.next_fire)
 	}
 }

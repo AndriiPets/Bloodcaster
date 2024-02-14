@@ -7,31 +7,47 @@ import (
 )
 
 type PlayerCustomCamera struct {
-	target_distance   float32
-	player_eyes_pos   float32
-	angle             rl.Vector2
+	target_distance float32
+	forward         rl.Vector3
+	right           rl.Vector3
+
+	//mouse controls
 	mouse_sensitivity float32
-	player_speed      float32
-	forward           rl.Vector3
-	right             rl.Vector3
-	allow_flight      bool
+	use_mouse         bool
+	invert_y          bool
+
+	//special options
+	focused      bool
+	allow_flight bool
+
+	//player stuff
+	player_eyes_pos float32
+	angle           rl.Vector2
+	move_speed      rl.Vector3
+	turn_speed      rl.Vector2
+
 	//view bobble stuff
 	view_bobble_freq      float32
 	view_bobble_mag       float32
 	curr_bobble           float32
 	view_bobble_waver_mag float32
+	swing_delta           float32
 }
 
 func (c *PlayerCustomCamera) custom_camera_init() {
 	c.target_distance = 0
 	c.player_eyes_pos = 0.4
 	c.mouse_sensitivity = 0.003
-	c.player_speed = 1.75
+	c.move_speed = rl.NewVector3(1.5, 1, 2.2)
+	c.turn_speed = rl.NewVector2(90, 90)
 	c.allow_flight = false
-	c.view_bobble_freq = 45
-	c.view_bobble_mag = 0.02
+	c.view_bobble_freq = 40
+	c.view_bobble_mag = 0.03
 	c.curr_bobble = 0
 	c.view_bobble_waver_mag = 0.005
+	c.use_mouse = true
+	c.focused = rl.IsWindowFocused()
+	c.invert_y = false
 }
 
 func (c *PlayerCustomCamera) Player_camera_init(pos_x, pos_z float32) rl.Camera {
@@ -45,7 +61,7 @@ func (c *PlayerCustomCamera) Player_camera_init(pos_x, pos_z float32) rl.Camera 
 	camera.Fovy = FOV
 	camera.Projection = rl.CameraPerspective
 
-	//Distance
+	/* //Distance
 	v1 := camera.Position
 	v2 := camera.Target
 	dx := v2.X - v1.X
@@ -58,7 +74,7 @@ func (c *PlayerCustomCamera) Player_camera_init(pos_x, pos_z float32) rl.Camera 
 	// Camera angle in plane XZ (0 aligned with Z, move positive CCW)
 	c.angle.X = math32.Atan2(dx, dz)
 	// Camera angle in plane XY (0 aligned with X, move positive CW)
-	c.angle.Y = math32.Atan2(dy, math32.Sqrt(dx*dx+dz*dz))
+	c.angle.Y = math32.Atan2(dy, math32.Sqrt(dx*dx+dz*dz)) */
 
 	c.player_eyes_pos = camera.Position.Y
 	c.mouse_sensitivity = MOUSE_SENSITIVITY
@@ -73,27 +89,27 @@ func If_bool(b bool) float32 {
 	return 0.0
 }
 
-func (c *PlayerCustomCamera) Get_speed_for_axis(axis int32) float32 {
+func (c *PlayerCustomCamera) Get_speed_for_axis(axis int32, speed float32) float32 {
 	factor := 1.0
 	if rl.IsKeyDown(KEY_SHIFT) {
 		factor = 2.0
 	}
 	if rl.IsKeyDown(axis) {
-		return c.player_speed * rl.GetFrameTime() * float32(factor)
+		return speed * rl.GetFrameTime() * float32(factor)
 	}
 	return 0
 }
 
-func (c *PlayerCustomCamera) Player_update_camera(camera *rl.Camera) {
+func (c *PlayerCustomCamera) Player_update_camera(camera *rl.Camera) float32 {
 
 	mouse_pos_delta := rl.GetMouseDelta()
 	direction := map[string]float32{
-		"forward":  c.Get_speed_for_axis(KEY_MOVE_FORWARD),
-		"backward": c.Get_speed_for_axis(KEY_MOVE_BACKWARD),
-		"left":     c.Get_speed_for_axis(KEY_MOVE_LEFT),
-		"right":    c.Get_speed_for_axis(KEY_MOVE_RIGHT),
-		"up":       c.Get_speed_for_axis(KEY_MOVE_UP),
-		"down":     c.Get_speed_for_axis(KEY_MOVE_DOWN),
+		"forward":  c.Get_speed_for_axis(KEY_MOVE_FORWARD, c.move_speed.Z),
+		"backward": c.Get_speed_for_axis(KEY_MOVE_BACKWARD, c.move_speed.Z),
+		"left":     c.Get_speed_for_axis(KEY_MOVE_LEFT, c.move_speed.X),
+		"right":    c.Get_speed_for_axis(KEY_MOVE_RIGHT, c.move_speed.X),
+		"up":       c.Get_speed_for_axis(KEY_MOVE_UP, c.move_speed.Y),
+		"down":     c.Get_speed_for_axis(KEY_MOVE_DOWN, c.move_speed.Y),
 	}
 
 	// Camera orientation calculation
@@ -124,11 +140,12 @@ func (c *PlayerCustomCamera) Player_update_camera(camera *rl.Camera) {
 
 	var eye_offset float32 = c.player_eyes_pos
 
+	swing_delta := math32.Max(
+		math32.Abs(direction["forward"]-direction["backward"]),
+		math32.Abs(direction["right"]-direction["left"]))
+
 	//Head bobble calculation
-	if c.view_bobble_freq > 0 {
-		swing_delta := math32.Max(
-			math32.Abs(direction["forward"]-direction["backward"]),
-			math32.Abs(direction["right"]-direction["left"]))
+	if swing_delta > 0 {
 
 		c.curr_bobble += swing_delta * c.view_bobble_freq
 
@@ -153,5 +170,6 @@ func (c *PlayerCustomCamera) Player_update_camera(camera *rl.Camera) {
 	camera.Target.Z = camera.Position.Z + target.Z
 
 	//camera.Position.Y = c.player_eyes_pos
+	return swing_delta
 
 }
