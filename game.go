@@ -22,7 +22,7 @@ func (g *Game) draw() {
 
 	rl.DrawGrid(100, 1)
 
-	g.game_map.Update()
+	g.game_map.Update(g.player.camera)
 
 	rl.EndMode3D()
 

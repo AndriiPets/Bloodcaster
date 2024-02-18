@@ -14,7 +14,7 @@ type Weapon struct {
 	fire_rate              float32
 	fire_range             float32
 	picked_up              bool
-	sprite_speed           int32
+	sprite_speed           float32
 	sprite_fire_frame      int32
 	sprites_total          int32
 	sprite_texture         rl.Texture2D
@@ -37,6 +37,7 @@ type WeaponHolder struct {
 }
 
 func Weapons_init() WeaponHolder {
+
 	wh := WeaponHolder{}
 
 	wh.weapons = Create_weapons_map()
@@ -80,11 +81,13 @@ func (w *WeaponHolder) weapon_change(name string) {
 }
 
 func (w *WeaponHolder) Weapon_fire(camera *rl.Camera, game_map *Map, nextFire float32) float32 {
+
 	if nextFire > 0 {
 		nextFire -= rl.GetFrameTime()
 	} else {
 
 		weapon := w.weapons[w.current_weapon]
+
 		if !w.is_active {
 
 			w.is_active = true
@@ -101,6 +104,7 @@ func (w *WeaponHolder) Weapon_fire(camera *rl.Camera, game_map *Map, nextFire fl
 }
 
 func (w *WeaponHolder) Draw(swing_delta float32) {
+
 	weapon := w.weapons[w.current_weapon]
 
 	frame_width := float32(weapon.sprite_texture.Width) / float32(weapon.sprites_total)
@@ -136,7 +140,7 @@ func (w *WeaponHolder) Draw(swing_delta float32) {
 	if w.is_active {
 		w.frame_counter++
 
-		if w.frame_counter >= rl.GetFPS()/(weapon.sprite_speed/int32(weapon.fire_rate)) {
+		if w.frame_counter >= rl.GetFPS()/int32(weapon.sprite_speed/weapon.fire_rate) {
 			w.curr_frame++
 
 			if w.curr_frame >= weapon.sprites_total {

@@ -32,9 +32,11 @@ const (
 	KEY_FIRE          int32 = rl.MouseButtonLeft
 	KEY_WEAPON_ONE    int32 = rl.KeyOne
 	KEY_WEAPON_TWO    int32 = rl.KeyTwo
+	KEY_WEAPON_THREE  int32 = rl.KeyThree
 	//ID's
 	WEAPON_MELEE_ID  int32 = 0
 	WEAPON_PISTOL_ID int32 = 1
+	WEAPON_RIFLE_ID  int32 = 2
 )
 
 // item and weapon settings
@@ -44,7 +46,7 @@ var WEAPON_PISTOL Weapon = Weapon{
 	weapon_id:              WEAPON_PISTOL_ID,
 	damage:                 3,
 	ammo:                   30,
-	fire_rate:              1.0,
+	fire_rate:              0.8,
 	fire_range:             12.0,
 	picked_up:              true,
 	sprite_speed:           10,
@@ -65,11 +67,26 @@ var WEAPON_MELEE Weapon = Weapon{
 	sprite_speed:           10,
 	sprite_fire_frame:      1,
 	sprites_total:          7,
-	sprite_position_offset: rl.NewVector2(0.5, 0.1),
+	sprite_position_offset: rl.NewVector2(0.5, 1.0),
+}
+
+var WEAPON_RIFLE Weapon = Weapon{
+	name:                   "rifle",
+	input_key:              KEY_WEAPON_THREE,
+	weapon_id:              WEAPON_RIFLE_ID,
+	damage:                 3,
+	ammo:                   99,
+	fire_rate:              0.5,
+	fire_range:             20.0,
+	picked_up:              true,
+	sprite_speed:           10,
+	sprite_fire_frame:      2,
+	sprites_total:          5,
+	sprite_position_offset: rl.NewVector2(-0.10, 1.0),
 }
 
 func Create_weapons_map() map[string]*Weapon {
-	w_map := map[string]*Weapon{"pistol": &WEAPON_PISTOL, "melee": &WEAPON_MELEE}
+	w_map := map[string]*Weapon{"pistol": &WEAPON_PISTOL, "melee": &WEAPON_MELEE, "rifle": &WEAPON_RIFLE}
 
 	return w_map
 }
